@@ -1,0 +1,65 @@
+{
+  "name": "martincamen/sonarr-php",
+  "description": "PHP SDK for Sonarr REST API v3",
+  "keywords": [
+    "sonarr",
+    "tv",
+    "series",
+    "episodes",
+    "api",
+    "sdk",
+    "media-server"
+  ],
+  "homepage": "https://github.com/martincamen/sonarr-php",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Martin Camen",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": "^8.3",
+    "guzzlehttp/guzzle": "^7.0",
+    "martincamen/php-arr-core": "^0.0.9"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.0",
+    "phpstan/phpstan": "^2.0",
+    "phpunit/phpunit": "^12.0",
+    "rector/rector": "^2.3",
+    "roave/security-advisories": "dev-latest"
+  },
+  "autoload": {
+    "psr-4": {
+      "MartinCamen\\Sonarr\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "MartinCamen\\Sonarr\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "pint": "vendor/bin/pint --test",
+    "pint-fix": "vendor/bin/pint",
+    "analyse": "vendor/bin/phpstan analyse",
+    "test": "vendor/bin/phpunit",
+    "rector": "vendor/bin/rector process --dry-run",
+    "rector-fix": "vendor/bin/rector process",
+    "check": [
+      "@analyse",
+      "@test",
+      "@pint",
+      "@rector"
+    ]
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "phpstan/extension-installer": true
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}
