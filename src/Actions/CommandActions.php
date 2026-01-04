@@ -48,18 +48,18 @@ final readonly class CommandActions extends CoreCommandActions
     }
 
     /** Search for all episodes in a season. */
-    public function searchSeason(int $ids, int $seasonNumber): Command
+    public function searchSeason(int $seriesId, int $seasonNumber): Command
     {
         return $this->run(CommandName::SeasonSearch, [
-            'seriesId'     => $ids,
+            'seriesId'     => $seriesId,
             'seasonNumber' => $seasonNumber,
         ]);
     }
 
     /** Search for all episodes in a series. */
-    public function searchSeries(int $ids): Command
+    public function searchSeries(int $id): Command
     {
-        return $this->run(CommandName::SeriesSearch, ['seriesId' => $ids]);
+        return $this->run(CommandName::SeriesSearch, ['seriesId' => $id]);
     }
 
     /**

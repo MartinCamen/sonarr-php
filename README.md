@@ -2,6 +2,11 @@
 
 A PHP SDK for the Sonarr REST API v3.
 
+Also available:
+- [PHP Radarr integration](https://github.com/martincamen/radarr-php)
+- [Laravel Sonarr integration](https://github.com/martincamen/laravel-sonarr)
+- [Laravel Radarr integration](https://github.com/martincamen/laravel-radarr)
+
 ## Requirements
 
 - PHP 8.3+
@@ -32,6 +37,7 @@ $series = $sonarr->series();
 
 // Get system status
 $status = $sonarr->system()->status();
+
 // Get system summary
 $systemSummary = $sonarr->systemSummary();
 ```
@@ -74,7 +80,10 @@ echo $downloads->totalProgress()->percentage() . '%';
 ### Series
 
 ```php
+use MartinCamen\ArrCore\Domain\Media\Series;
+
 // Get all series
+/** @var Series[] $series */
 $series = $sonarr->series();
 
 foreach ($series as $show) {
@@ -85,7 +94,9 @@ foreach ($series as $show) {
 }
 
 // Get a specific series by ID
+/** @var Series $show */
 $show = $sonarr->seriesById(1);
+
 echo $show->title;
 echo $show->overview;
 ```
@@ -93,9 +104,12 @@ echo $show->overview;
 ### System Status
 
 ```php
-echo $radarr->system()->status()->version;
+use MartinCamen\Sonarr\Sonarr;
 
-foreach ($radarr->system()->health()->warnings() as $warning) {
+/** @var Sonarr $sonarr */
+echo $sonarr->system()->status()->version;
+
+foreach ($sonarr->system()->health()->warnings() as $warning) {
     echo $warning->type . ': ' . $warning->message;
 }
 ```
@@ -103,6 +117,9 @@ foreach ($radarr->system()->health()->warnings() as $warning) {
 ### System Summary
 
 ```php
+use MartinCamen\ArrCore\Domain\System\SystemSummary;
+
+/** @var SystemSummary $summary */
 $summary = $sonarr->systemSummary();
 
 echo $summary->version;
@@ -119,8 +136,13 @@ Access episode information and management:
 
 ```php
 use MartinCamen\Sonarr\Data\Options\EpisodeOptions;
+use MartinCamen\Sonarr\Data\Responses\Episode;
+use MartinCamen\Sonarr\Data\Responses\EpisodeCollection;
+use MartinCamen\Sonarr\Sonarr;
 
 // Get all episodes for a series
+
+/** @var EpisodeCollection $episodes */
 $episodes = $sonarr->episode()->forSeries(1);
 
 // Get episodes for a specific season
@@ -131,6 +153,7 @@ $options = EpisodeOptions::make()->withIncludeImages(includeImages: true);
 $episodes = $sonarr->episode()->all($options);
 
 // Get a specific episode by ID
+/** @var Episode $episode */
 $episode = $sonarr->episode()->get(1);
 ```
 
@@ -139,14 +162,23 @@ $episode = $sonarr->episode()->get(1);
 Access episode file information:
 
 ```php
+use MartinCamen\Sonarr\Actions\EpisodeFileActions;
+use MartinCamen\Sonarr\Data\Responses\EpisodeFile;
+use MartinCamen\Sonarr\Data\Responses\EpisodeFileCollection;
+
+/** @var EpisodeFileActions $episodeFiles */
+$episodeFiles = $sonarr->episodeFile();
+
 // Get all episode files for a series
-$files = $sonarr->episodeFile()->all(seriesId: 1);
+/** @var EpisodeFileCollection $files */
+$files = $episodeFiles->all(seriesId: 1);
 
 // Get a specific episode file by ID
-$file = $sonarr->episodeFile()->get(1);
+/** @var EpisodeFile $file */
+$file = $episodeFiles->find(1);
 
 // Delete an episode file
-$sonarr->episodeFile()->delete(1);
+$episodeFiles->delete(1);
 ```
 
 ### Calendar
@@ -154,24 +186,30 @@ $sonarr->episodeFile()->delete(1);
 Access upcoming episode releases:
 
 ```php
+use MartinCamen\Sonarr\Actions\CalendarActions;
 use MartinCamen\Sonarr\Data\Options\CalendarOptions;
+use MartinCamen\Sonarr\Data\Responses\EpisodeCollection;
 
 // Get upcoming episodes (defaults to today to today + 2 days)
-$calendar = $sonarr->calendar()->get();
+
+/** @var CalendarActions $calendar */
+$calendar = $sonarr->calendar();
+
+/** @var EpisodeCollection $episodes */
+$episodes = $calendar->all();
 
 // Get episodes within a specific date range
-$options = CalendarOptions::make()
-    ->withDateRange(
-        new DateTime('2024-01-01'),
-        new DateTime('2024-01-31'),
-    );
-$episodes = $sonarr->calendar()->get($options);
+$options = CalendarOptions::make()->withDateRange(
+    new DateTime('2024-01-01'),
+    new DateTime('2024-01-31'),
+);
+$episodes = $calendar->all($options);
 
 // Include unmonitored series
 $options = CalendarOptions::make()
     ->withUnmonitored(unmonitored: true)
     ->withTags([1, 2]);
-$episodes = $sonarr->calendar()->get($options);
+$episodes = $calendar->get($options);
 ```
 
 ### History
@@ -179,30 +217,30 @@ $episodes = $sonarr->calendar()->get($options);
 Access download history:
 
 ```php
-use MartinCamen\Sonarr\Data\Enums\HistoryEventType;
-use MartinCamen\Sonarr\Data\Options\HistoryOptions;
 use MartinCamen\ArrCore\Data\Options\PaginationOptions;
 use MartinCamen\ArrCore\Data\Options\SortOptions;
+use MartinCamen\Sonarr\Actions\HistoryActions;
+use MartinCamen\Sonarr\Data\Enums\HistoryEventType;
+use MartinCamen\Sonarr\Data\Options\HistoryOptions;
+use MartinCamen\Sonarr\Data\Responses\HistoryPage;
 
 // Get paginated history with defaults
-$history = $sonarr->history()->all();
+/** @var HistoryActions $history */
+$history = $sonarr->history();
+
+/** @var HistoryPage $historyPage */
+$historyPage = $history->all();
 
 // Get history with custom pagination and sorting
 $pagination = new PaginationOptions(page: 1, pageSize: 50);
 $sort = SortOptions::by('date')->descending();
-$history = $sonarr->history()->all($pagination, $sort);
+$historyPage = $history->all($pagination, $sort);
 
 // Filter by event type
 $filters = HistoryOptions::make()
     ->withEventType(HistoryEventType::Grabbed)
     ->withIncludeSeries(true);
-$history = $sonarr->history()->all(null, null, $filters);
-
-// Get history for a specific series
-$records = $sonarr->history()->forSeries(1);
-
-// Get history for a specific episode
-$records = $sonarr->history()->forEpisode(1);
+$historyPage = $history->all(null, null, $filters);
 ```
 
 ### Wanted (Missing & Cutoff)
@@ -210,20 +248,24 @@ $records = $sonarr->history()->forEpisode(1);
 Access missing episodes and quality cutoff:
 
 ```php
+use MartinCamen\ArrCore\Actions\WantedActions;
 use MartinCamen\ArrCore\Data\Options\WantedOptions;
 
+/** @var WantedActions $wanted */
+$wanted = $sonarr->wanted();
+
 // Get paginated missing episodes
-$missing = $sonarr->wanted()->missing();
+$missing = $wanted->missing();
 
 // Filter to only monitored episodes
 $filters = WantedOptions::make()->onlyMonitored();
-$missing = $sonarr->wanted()->missing(null, null, $filters);
+$missing = $wanted->missing(null, null, $filters);
 
 // Get ALL missing episodes (automatically handles pagination)
-$allMissing = $sonarr->wanted()->allMissing();
+$allMissing = $wanted->allMissing();
 
 // Get episodes below quality cutoff
-$cutoff = $sonarr->wanted()->cutoff();
+$cutoff = $wanted->cutoff();
 ```
 
 ### Commands
@@ -231,17 +273,22 @@ $cutoff = $sonarr->wanted()->cutoff();
 Execute Sonarr commands:
 
 ```php
+use MartinCamen\Sonarr\Actions\CommandActions;
+
+/** @var CommandActions $commands */
+$commands = $sonarr->command();
+
 // Get all commands
-$commands = $sonarr->command()->all();
+$all = $commands->all();
 
 // Trigger an RSS sync
-$command = $sonarr->command()->rssSync();
+$command = $commands->rssSync();
 
 // Execute a series search
-$command = $sonarr->command()->searchSeries(1);
+$command = $commands->searchSeries(id: 1);
 
-// Search for missing episodes
-$command = $sonarr->command()->searchMissing();
+// Execute a season specific series search
+$command = $commands->searchSeason(seriesId: 1, seasonNumber: 4);
 ```
 
 ### Advanced: Raw API Access
@@ -250,6 +297,7 @@ For operations not yet exposed through the SDK, use the `api()` method to access
 
 ```php
 use MartinCamen\Sonarr\Data\Options\QueueOptions;
+use MartinCamen\Sonarr\Sonarr;
 
 // Add a new series
 $seriesData = [
@@ -262,6 +310,8 @@ $seriesData = [
         'searchForMissingEpisodes' => true,
     ],
 ];
+
+/** @var Sonarr $sonarr */
 $sonarr->api()->series()->add($seriesData);
 
 // Update a series
