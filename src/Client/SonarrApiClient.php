@@ -6,7 +6,6 @@ namespace MartinCamen\Sonarr\Client;
 
 use MartinCamen\ArrCore\Actions\SystemActions;
 use MartinCamen\ArrCore\Actions\WantedActions;
-use MartinCamen\ArrCore\Client\RestClient;
 use MartinCamen\ArrCore\Client\RestClientInterface;
 use MartinCamen\Sonarr\Actions\CalendarActions;
 use MartinCamen\Sonarr\Actions\CommandActions;
@@ -63,7 +62,7 @@ class SonarrApiClient implements SonarrApiClientInterface
             apiVersion: $apiVersion,
         );
 
-        $this->client = $restClient ?? new RestClient($config);
+        $this->client = $restClient ?? new SonarrRestClient($config);
     }
 
     public static function make(SonarrConfiguration $config): self
