@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace MartinCamen\Sonarr;
 
+use MartinCamen\ArrCore\Actions\SystemActions;
 use MartinCamen\ArrCore\Actions\WantedActions;
 use MartinCamen\ArrCore\Domain\Download\DownloadItemCollection;
 use MartinCamen\ArrCore\Domain\Media\Series;
-use MartinCamen\ArrCore\Domain\System\SystemStatus;
+use MartinCamen\ArrCore\Domain\System\SystemSummary;
 use MartinCamen\Sonarr\Actions\CalendarActions;
 use MartinCamen\Sonarr\Actions\CommandActions;
 use MartinCamen\Sonarr\Actions\EpisodeActions;
@@ -41,9 +42,14 @@ interface SonarrInterface
     public function seriesById(int $id): Series;
 
     /**
+     * Access system functionality.
+     */
+    public function system(): SystemActions;
+
+    /**
      * Get system status including health checks.
      */
-    public function systemStatus(): SystemStatus;
+    public function systemSummary(): SystemSummary;
 
     /**
      * Access episode functionality.

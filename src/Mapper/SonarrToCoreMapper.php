@@ -7,9 +7,9 @@ namespace MartinCamen\Sonarr\Mapper;
 use MartinCamen\ArrCore\Domain\Download\DownloadItem;
 use MartinCamen\ArrCore\Domain\Download\DownloadItemCollection;
 use MartinCamen\ArrCore\Domain\Media\Series;
-use MartinCamen\ArrCore\Domain\System\DownloadServiceSystemStatus;
+use MartinCamen\ArrCore\Domain\System\DownloadServiceSystemSummary;
 use MartinCamen\ArrCore\Domain\System\HealthCheck;
-use MartinCamen\ArrCore\Domain\System\SystemStatus;
+use MartinCamen\ArrCore\Domain\System\SystemSummary;
 use MartinCamen\ArrCore\Enum\Service;
 use MartinCamen\ArrCore\Mapping\ServiceToCoreMapper;
 use MartinCamen\ArrCore\Mapping\StatusNormalizer;
@@ -118,12 +118,12 @@ final class SonarrToCoreMapper extends ServiceToCoreMapper
     }
 
     /**
-     * Map Sonarr SystemStatus to Core SystemStatus.
+     * Map Sonarr SystemSummary to Core SystemSummary.
      *
      * @param array<int, HealthCheck> $healthChecks
      */
-    public static function mapSystemStatus(DownloadServiceSystemStatus $dto, array $healthChecks = []): SystemStatus
+    public static function mapSystemSummary(DownloadServiceSystemSummary $dto, array $healthChecks = []): SystemSummary
     {
-        return self::mapToSystemStatus(Service::Sonarr, $dto, $healthChecks);
+        return self::mapToSystemSummary(Service::Sonarr, $dto, $healthChecks);
     }
 }

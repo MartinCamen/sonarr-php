@@ -31,7 +31,9 @@ $downloads = $sonarr->downloads();
 $series = $sonarr->series();
 
 // Get system status
-$status = $sonarr->systemStatus();
+$status = $sonarr->system()->status();
+// Get system summary
+$systemSummary = $sonarr->systemSummary();
 ```
 
 ### Laravel Integration
@@ -91,12 +93,22 @@ echo $show->overview;
 ### System Status
 
 ```php
-$status = $sonarr->systemStatus();
+echo $radarr->system()->status()->version;
 
-echo $status->version;
-echo $status->isHealthy ? 'Healthy' : 'Issues detected';
+foreach ($radarr->system()->health()->warnings() as $warning) {
+    echo $warning->type . ': ' . $warning->message;
+}
+```
 
-foreach ($status->healthIssues as $issue) {
+### System Summary
+
+```php
+$summary = $sonarr->systemSummary();
+
+echo $summary->version;
+echo $summary->isHealthy ? 'Healthy' : 'Issues detected';
+
+foreach ($summary->healthIssues as $issue) {
     echo $issue->type . ': ' . $issue->message;
 }
 ```

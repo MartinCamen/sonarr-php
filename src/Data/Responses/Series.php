@@ -9,7 +9,7 @@ final readonly class Series
 {
     /**
      * @param array<int, Season> $seasons
-     * @param array<string, mixed> $images
+     * @param array<int, array<string, mixed>> $images
      * @param array<int, array<string, mixed>> $alternateTitles
      * @param array<int, string> $genres
      * @param array<string, mixed> $ratings
@@ -53,7 +53,7 @@ final readonly class Series
         public bool $useSceneNumbering,
     ) {}
 
-    /** @param  array<string, mixed>  $data */
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): self
     {
         return new self(
