@@ -8,9 +8,10 @@ use MartinCamen\ArrCore\Actions\SystemActions;
 use MartinCamen\ArrCore\Actions\WantedActions;
 use MartinCamen\ArrCore\Domain\Download\DownloadItemCollection;
 use MartinCamen\ArrCore\Domain\Media\Series;
+use MartinCamen\ArrCore\Domain\System\DownloadServiceSystemSummary;
+use MartinCamen\ArrCore\Domain\System\HealthCheckCollection;
 use MartinCamen\ArrCore\Domain\System\SystemSummary;
 use MartinCamen\ArrCore\Testing\BaseFake;
-use MartinCamen\ArrCore\Testing\Traits\FakesArrDownloadServices;
 use MartinCamen\Sonarr\Actions\CalendarActions;
 use MartinCamen\Sonarr\Actions\CommandActions;
 use MartinCamen\Sonarr\Actions\EpisodeActions;
@@ -21,7 +22,9 @@ use MartinCamen\Sonarr\Data\Responses\QueuePage;
 use MartinCamen\Sonarr\Data\Responses\SeriesCollection;
 use MartinCamen\Sonarr\Mapper\SonarrToCoreMapper;
 use MartinCamen\Sonarr\SonarrInterface;
+use MartinCamen\Sonarr\Testing\Factories\DownloadFactory;
 use MartinCamen\Sonarr\Testing\Factories\SeriesFactory;
+use MartinCamen\Sonarr\Testing\Factories\SystemStatusFactory;
 
 /**
  * Fake implementation for testing.
@@ -41,8 +44,6 @@ use MartinCamen\Sonarr\Testing\Factories\SeriesFactory;
  */
 final class SonarrFake extends BaseFake implements SonarrInterface
 {
-    use FakesArrDownloadServices;
-
     private ?SonarrApiFake $apiFake = null;
 
     /**
@@ -52,7 +53,7 @@ final class SonarrFake extends BaseFake implements SonarrInterface
     {
         $this->recordCall('downloads', []);
 
-        $queueData = $this->formatsDownloads();
+        $queueData = $this->formatDownloads();
 
         return SonarrToCoreMapper::mapQueuePage(
             QueuePage::fromArray($queueData),
@@ -182,5 +183,32 @@ final class SonarrFake extends BaseFake implements SonarrInterface
     public function api(): SonarrApiClientInterface
     {
         return $this->apiFake ??= new SonarrApiFake();
+    }
+
+    /** @return array<string, mixed> */
+    protected function formatDownloads(): array
+    {
+        return $this->responses['downloads'] ?? [
+            'page'         => 1,
+            'pageSize'     => 10,
+            'totalRecords' => 2,
+            'records'      => DownloadFactory::makeMany(2),
+        ];
+    }
+
+    protected function getStatusForDownloadServiceSystemSummary(): DownloadServiceSystemSummary
+    {
+        $data = $this->responses['systemSummary'] ?? SystemStatusFactory::make();
+
+        return DownloadServiceSystemSummary::fromArray($data);
+    }
+
+    protected function getHealthForDownloadServiceSystemSummary(): HealthCheckCollection
+    {
+        $data = isset($this->responses['systemSummary'])
+            ? ($this->responses['health'] ?? [])
+            : [];
+
+        return HealthCheckCollection::fromArray($data);
     }
 }
