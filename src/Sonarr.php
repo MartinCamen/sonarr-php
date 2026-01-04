@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace MartinCamen\Sonarr;
 
+use MartinCamen\ArrCore\Actions\SystemActions;
 use MartinCamen\ArrCore\Actions\WantedActions;
 use MartinCamen\ArrCore\Domain\Download\DownloadItemCollection;
 use MartinCamen\ArrCore\Domain\Media\Series;
-use MartinCamen\ArrCore\Domain\System\SystemStatus;
+use MartinCamen\ArrCore\Domain\System\SystemSummary;
 use MartinCamen\Sonarr\Actions\CalendarActions;
 use MartinCamen\Sonarr\Actions\CommandActions;
 use MartinCamen\Sonarr\Actions\EpisodeActions;
@@ -39,7 +40,7 @@ use MartinCamen\Sonarr\Mapper\SonarrToCoreMapper;
  * $series = $sonarr->series();
  *
  * // Get system status
- * $status = $sonarr->systemStatus();
+ * $status = $sonarr->system()->status();
  * ```
  */
 class Sonarr implements SonarrInterface
@@ -115,14 +116,24 @@ class Sonarr implements SonarrInterface
     }
 
     /**
+     * Access system functionality.
+     *
+     * Provides access to system information, health information, and more.
+     */
+    public function system(): SystemActions
+    {
+        return $this->apiClient->system();
+    }
+
+    /**
      * Get system status including health checks.
      */
-    public function systemStatus(): SystemStatus
+    public function systemSummary(): SystemSummary
     {
         $status = $this->apiClient->system()->status();
         $health = $this->apiClient->system()->health();
 
-        return SonarrToCoreMapper::mapSystemStatus($status, $health->all());
+        return SonarrToCoreMapper::mapSystemSummary($status, $health->all());
     }
 
     /**

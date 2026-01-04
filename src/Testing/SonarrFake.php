@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace MartinCamen\Sonarr\Testing;
 
+use MartinCamen\ArrCore\Actions\SystemActions;
 use MartinCamen\ArrCore\Actions\WantedActions;
 use MartinCamen\ArrCore\Domain\Download\DownloadItemCollection;
 use MartinCamen\ArrCore\Domain\Media\Series;
-use MartinCamen\ArrCore\Domain\System\SystemStatus;
+use MartinCamen\ArrCore\Domain\System\SystemSummary;
 use MartinCamen\ArrCore\Testing\BaseFake;
 use MartinCamen\ArrCore\Testing\Traits\FakesArrDownloadServices;
 use MartinCamen\Sonarr\Actions\CalendarActions;
@@ -95,14 +96,24 @@ final class SonarrFake extends BaseFake implements SonarrInterface
     /**
      * Get system status.
      */
-    public function systemStatus(): SystemStatus
+    public function system(): SystemActions
     {
-        $this->recordCall('systemStatus', []);
+        $this->recordCall('system', []);
 
-        $status = $this->getStatusForDownloadServiceSystemStatus();
-        $health = $this->getHealthForDownloadServiceSystemStatus();
+        return $this->api()->system();
+    }
 
-        return SonarrToCoreMapper::mapSystemStatus($status, $health->all());
+    /**
+     * Get system summary.
+     */
+    public function systemSummary(): SystemSummary
+    {
+        $this->recordCall('systemSummary', []);
+
+        $status = $this->getStatusForDownloadServiceSystemSummary();
+        $health = $this->getHealthForDownloadServiceSystemSummary();
+
+        return SonarrToCoreMapper::mapSystemSummary($status, $health->all());
     }
 
     /**
