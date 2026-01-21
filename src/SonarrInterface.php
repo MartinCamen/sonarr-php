@@ -6,14 +6,13 @@ namespace MartinCamen\Sonarr;
 
 use MartinCamen\ArrCore\Actions\SystemActions;
 use MartinCamen\ArrCore\Actions\WantedActions;
-use MartinCamen\ArrCore\Domain\Download\DownloadItemCollection;
-use MartinCamen\ArrCore\Domain\Media\Series;
-use MartinCamen\ArrCore\Domain\System\SystemSummary;
 use MartinCamen\Sonarr\Actions\CalendarActions;
 use MartinCamen\Sonarr\Actions\CommandActions;
+use MartinCamen\Sonarr\Actions\DownloadActions;
 use MartinCamen\Sonarr\Actions\EpisodeActions;
 use MartinCamen\Sonarr\Actions\EpisodeFileActions;
 use MartinCamen\Sonarr\Actions\HistoryActions;
+use MartinCamen\Sonarr\Actions\SeriesActions;
 use MartinCamen\Sonarr\Client\SonarrApiClientInterface;
 
 /**
@@ -25,31 +24,19 @@ use MartinCamen\Sonarr\Client\SonarrApiClientInterface;
 interface SonarrInterface
 {
     /**
-     * Get all active downloads (queue items).
+     * Access series functionality.
      */
-    public function downloads(): DownloadItemCollection;
+    public function series(): SeriesActions;
 
     /**
-     * Get all series.
-     *
-     * @return array<int, Series>
+     * Access download functionality.
      */
-    public function series(): array;
-
-    /**
-     * Get a single series by ID.
-     */
-    public function seriesById(int $id): Series;
+    public function downloads(): DownloadActions;
 
     /**
      * Access system functionality.
      */
     public function system(): SystemActions;
-
-    /**
-     * Get system status including health checks.
-     */
-    public function systemSummary(): SystemSummary;
 
     /**
      * Access episode functionality.

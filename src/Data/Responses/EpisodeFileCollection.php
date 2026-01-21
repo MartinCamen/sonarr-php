@@ -5,11 +5,10 @@ namespace MartinCamen\Sonarr\Data\Responses;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
+use MartinCamen\ArrCore\ValueObject\ArrFileSize;
 use Traversable;
 
-/**
- * @implements IteratorAggregate<int, EpisodeFile>
- */
+/** @implements IteratorAggregate<int, EpisodeFile> */
 final class EpisodeFileCollection implements Countable, IteratorAggregate
 {
     /** @param  array<int, EpisodeFile>  $files */
@@ -71,7 +70,7 @@ final class EpisodeFileCollection implements Countable, IteratorAggregate
     public function toArray(): array
     {
         return array_map(
-            fn(EpisodeFile $file): array => $file->toArray(),
+            static fn(EpisodeFile $file): array => $file->toArray(),
             $this->files,
         );
     }
@@ -81,7 +80,7 @@ final class EpisodeFileCollection implements Countable, IteratorAggregate
         return new self(
             array_values(array_filter(
                 $this->files,
-                fn(EpisodeFile $file): bool => $file->seasonNumber === $seasonNumber,
+                static fn(EpisodeFile $file): bool => $file->seasonNumber === $seasonNumber,
             )),
         );
     }
@@ -90,10 +89,10 @@ final class EpisodeFileCollection implements Countable, IteratorAggregate
     {
         $totalSize = array_reduce(
             $this->files,
-            fn(int $carry, EpisodeFile $file): int => $carry + $file->size,
+            static fn(int $carry, EpisodeFile $file): int => $carry + $file->size,
             0,
         );
 
-        return round($totalSize / 1024 / 1024 / 1024, 2);
+        return ArrFileSize::fromBytes($totalSize)->toGigabytes(precision: 2);
     }
 }

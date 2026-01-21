@@ -6,11 +6,7 @@ use MartinCamen\ArrCore\Testing\Factories\ArrHistoryFactory;
 
 class HistoryFactory extends ArrHistoryFactory
 {
-    /**
-     * Get Sonarr-specific default attributes.
-     *
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     protected static function getServiceDefaults(int $id): array
     {
         $episodeNumber = str_pad((string) $id, 2, '0', STR_PAD_LEFT);

@@ -2,10 +2,22 @@
 
 A PHP SDK for the Sonarr REST API v3.
 
-Also available:
-- [PHP Radarr integration](https://github.com/martincamen/radarr-php)
-- [Laravel Sonarr integration](https://github.com/martincamen/laravel-sonarr)
-- [Laravel Radarr integration](https://github.com/martincamen/laravel-radarr)
+> [!IMPORTANT]
+> This project is still being developed and breaking changes might occur even between patch versions.
+>
+> The aim is to follow semantic versioning as soon as possible.
+
+## Ecosystem
+
+| Package                                                                 | Description                        |
+|-------------------------------------------------------------------------|------------------------------------|
+| [radarr-php](https://github.com/martincamen/radarr-php)                 | PHP SDK for Radarr                 |
+| [sonarr-php](https://github.com/martincamen/sonarr-php)                 | PHP SDK for Sonarr                 |
+| [jellyseerr-php](https://github.com/martincamen/jellyseerr-php)         | PHP SDK for Jellyseerr             |
+| [laravel-radarr](https://github.com/martincamen/laravel-radarr)         | Laravel integration for Radarr     |
+| [laravel-sonarr](https://github.com/martincamen/laravel-sonarr)         | Laravel integration for Sonarr     |
+| [laravel-jellyseerr](https://github.com/martincamen/laravel-jellyseerr) | Laravel integration for Jellyseerr |
+
 
 ## Requirements
 
@@ -30,16 +42,16 @@ $sonarr = Sonarr::create(
 );
 
 // Get all downloads (queue items)
-$downloads = $sonarr->downloads();
+$downloads = $sonarr->downloads()->all();
 
 // Get all series
-$series = $sonarr->series();
+$series = $sonarr->series()->all();
+
+// Get a specific series
+$series = $sonarr->series()->find(1);
 
 // Get system status
 $status = $sonarr->system()->status();
-
-// Get system summary
-$systemSummary = $sonarr->systemSummary();
 ```
 
 ### Laravel Integration
@@ -50,41 +62,47 @@ For Laravel integration, use the [laravel-sonarr](https://github.com/martincamen
 
 ### Downloads (Queue)
 
-Get active downloads using the unified `downloads()` method, which returns Core domain models compatible with other *arr services:
+Get active downloads using the `downloads()` action:
 
 ```php
 use MartinCamen\Sonarr\Sonarr;
 
 $sonarr = Sonarr::create('localhost', 8989, 'your-api-key');
 
-// Get all active downloads
-$downloads = $sonarr->downloads();
+// Get all active downloads (paginated)
+$downloadPage = $sonarr->downloads()->all();
 
-foreach ($downloads as $item) {
-    echo $item->name;
-    echo $item->progress->percentage() . '%';
+foreach ($downloadPage as $item) {
+    echo $item->title;
     echo $item->status->value;
-    echo $item->size->formatted();
+    echo $item->sizeLeft;
 }
 
-// Filter downloads by status
-$active = $downloads->active();
-$completed = $downloads->completed();
-$failed = $downloads->failed();
+// Get a specific download by ID
+$download = $sonarr->downloads()->find(1);
 
-// Get total size and progress
-echo $downloads->totalSize()->formatted();
-echo $downloads->totalProgress()->percentage() . '%';
+// Get download status summary
+$status = $sonarr->downloads()->status();
+echo "Total: {$status->totalCount}";
+echo "Unknown: {$status->unknownCount}";
+
+// Delete a download
+$sonarr->downloads()->delete(1);
+
+// Bulk delete downloads
+$sonarr->downloads()->bulkDelete([1, 2, 3]);
 ```
 
 ### Series
 
 ```php
-use MartinCamen\ArrCore\Domain\Media\Series;
+use MartinCamen\Sonarr\Data\Responses\Series;
+use MartinCamen\Sonarr\Data\Responses\SeriesCollection;
+use MartinCamen\Sonarr\Sonarr;
 
 // Get all series
-/** @var Series[] $series */
-$series = $sonarr->series();
+/** @var SeriesCollection $series */
+$series = $sonarr->series()->all();
 
 foreach ($series as $show) {
     echo $show->title;
@@ -95,39 +113,63 @@ foreach ($series as $show) {
 
 // Get a specific series by ID
 /** @var Series $show */
-$show = $sonarr->seriesById(1);
+$show = $sonarr->series()->find(1);
 
 echo $show->title;
 echo $show->overview;
+
+// Search for series
+$results = $sonarr->series()->search('Breaking Bad');
+
+// Search by TVDB ID
+$series = $sonarr->series()->searchByTvdb(81189);
+
+// Add a new series
+$series = $sonarr->series()->add([
+    'title'            => 'Breaking Bad',
+    'tvdbId'           => 81189,
+    'qualityProfileId' => 1,
+    'rootFolderPath'   => '/tv/',
+]);
+
+// Update a series
+$series = $sonarr->series()->update(1, ['monitored' => false]);
+
+// Delete a series
+$sonarr->series()->delete(1);
 ```
 
-### System Status
+### System
 
 ```php
-use MartinCamen\Sonarr\Sonarr;
+use MartinCamen\ArrCore\Actions\SystemActions;
 
-/** @var Sonarr $sonarr */
-echo $sonarr->system()->status()->version;
+/** @var SystemActions $system */
+$system = $sonarr->system();
 
-foreach ($sonarr->system()->health()->warnings() as $warning) {
+// Get system status
+$status = $system->status();
+echo $status->version;
+echo $status->osName;
+
+// Get system health
+$health = $system->health();
+foreach ($health->warnings() as $warning) {
     echo $warning->type . ': ' . $warning->message;
 }
-```
 
-### System Summary
-
-```php
-use MartinCamen\ArrCore\Domain\System\SystemSummary;
-
-/** @var SystemSummary $summary */
-$summary = $sonarr->systemSummary();
-
-echo $summary->version;
-echo $summary->isHealthy ? 'Healthy' : 'Issues detected';
-
-foreach ($summary->healthIssues as $issue) {
-    echo $issue->type . ': ' . $issue->message;
+// Get disk space
+$diskSpace = $system->diskSpace();
+foreach ($diskSpace as $disk) {
+    echo $disk->path . ': ' . $disk->freeSpace;
 }
+
+// Get system tasks
+$tasks = $system->tasks();
+$task = $system->task(1);
+
+// Get backups
+$backups = $system->backups();
 ```
 
 ### Episodes
@@ -135,26 +177,26 @@ foreach ($summary->healthIssues as $issue) {
 Access episode information and management:
 
 ```php
-use MartinCamen\Sonarr\Data\Options\EpisodeOptions;
 use MartinCamen\Sonarr\Data\Responses\Episode;
 use MartinCamen\Sonarr\Data\Responses\EpisodeCollection;
 use MartinCamen\Sonarr\Sonarr;
 
-// Get all episodes for a series
-
+// Get all episodes
 /** @var EpisodeCollection $episodes */
+$episodes = $sonarr->episode()->all();
+
+// Get all episodes for a series
 $episodes = $sonarr->episode()->forSeries(1);
 
 // Get episodes for a specific season
 $episodes = $sonarr->episode()->forSeries(1, seasonNumber: 2);
 
-// Get all episodes with custom filters
-$options = EpisodeOptions::make()->withIncludeImages(includeImages: true);
-$episodes = $sonarr->episode()->all($options);
-
 // Get a specific episode by ID
 /** @var Episode $episode */
-$episode = $sonarr->episode()->get(1);
+$episode = $sonarr->episode()->find(1);
+
+// Update an episode
+$episode = $sonarr->episode()->update(1, ['monitored' => false]);
 ```
 
 ### Episode Files
@@ -162,23 +204,22 @@ $episode = $sonarr->episode()->get(1);
 Access episode file information:
 
 ```php
-use MartinCamen\Sonarr\Actions\EpisodeFileActions;
 use MartinCamen\Sonarr\Data\Responses\EpisodeFile;
 use MartinCamen\Sonarr\Data\Responses\EpisodeFileCollection;
 
-/** @var EpisodeFileActions $episodeFiles */
-$episodeFiles = $sonarr->episodeFile();
-
 // Get all episode files for a series
 /** @var EpisodeFileCollection $files */
-$files = $episodeFiles->all(seriesId: 1);
+$files = $sonarr->episodeFile()->all(seriesId: 1);
 
 // Get a specific episode file by ID
 /** @var EpisodeFile $file */
-$file = $episodeFiles->find(1);
+$file = $sonarr->episodeFile()->find(1);
 
 // Delete an episode file
-$episodeFiles->delete(1);
+$sonarr->episodeFile()->delete(1);
+
+// Bulk delete episode files
+$sonarr->episodeFile()->bulkDelete([1, 2, 3]);
 ```
 
 ### Calendar
@@ -224,11 +265,11 @@ use MartinCamen\Sonarr\Data\Enums\HistoryEventType;
 use MartinCamen\Sonarr\Data\Options\HistoryOptions;
 use MartinCamen\Sonarr\Data\Responses\HistoryPage;
 
-// Get paginated history with defaults
 /** @var HistoryActions $history */
 $history = $sonarr->history();
 
 /** @var HistoryPage $historyPage */
+// Get paginated history with defaults
 $historyPage = $history->all();
 
 // Get history with custom pagination and sorting
@@ -296,6 +337,8 @@ $command = $commands->searchSeason(seriesId: 1, seasonNumber: 4);
 For operations not yet exposed through the SDK, use the `api()` method to access the low-level API client:
 
 ```php
+use MartinCamen\ArrCore\Data\Options\PaginationOptions;
+use MartinCamen\ArrCore\Data\Options\SortOptions;
 use MartinCamen\Sonarr\Data\Options\QueueOptions;
 use MartinCamen\Sonarr\Sonarr;
 
@@ -321,7 +364,7 @@ $sonarr->api()->series()->update(1, $seriesData);
 $sonarr->api()->series()->delete(1, deleteFiles: true);
 
 // Search for series
-$results = $sonarr->api()->series()->lookup('Breaking Bad');
+$results = $sonarr->api()->series()->search('Breaking Bad');
 
 // Get queue with full options
 $pagination = new PaginationOptions(page: 1, pageSize: 100);
@@ -407,7 +450,7 @@ class MyTest extends TestCase
             'series' => SeriesFactory::makeMany(5),
         ]);
 
-        $series = $fake->series();
+        $series = $fake->series()->all();
 
         $this->assertCount(5, $series);
         $fake->assertCalled('series');
@@ -421,7 +464,7 @@ class MyTest extends TestCase
             'downloads' => DownloadFactory::makeMany(3),
         ]);
 
-        $downloads = $fake->downloads();
+        $downloads = $fake->downloads()->all();
 
         $this->assertCount(3, $downloads);
         $fake->assertCalled('downloads');
@@ -457,14 +500,17 @@ The SDK follows a layered architecture:
 ```
 Sonarr (Public SDK)
   ↓
-SonarrApiClient (Internal API Client)
+Action Classes (SeriesActions, DownloadActions, etc.)
+  ↓
+Endpoint Classes (SeriesEndpoint, QueueEndpoint, etc.)
   ↓
 HTTP Client
 ```
 
-- **`Sonarr`**: The public interface with unified terminology (`downloads()`, `series()`) returning Core domain models
-- **`SonarrApiClient`**: Internal client using Sonarr's native API terminology (`queue()`, `series()`)
-- **Core Domain Models**: Shared types from `php-arr-core` for cross-service compatibility
+- **`Sonarr`**: The public entry point returning action classes
+- **Action Classes**: Type-safe methods for each domain (`series()->all()`, `downloads()->find(1)`)
+- **Endpoint Classes**: Low-level API calls using Sonarr's native terminology
+- **Response Types**: Typed DTOs from the SDK (`Series`, `DownloadPage`, etc.)
 
 ## License
 

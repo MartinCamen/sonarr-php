@@ -6,18 +6,16 @@ namespace MartinCamen\Sonarr;
 
 use MartinCamen\ArrCore\Actions\SystemActions;
 use MartinCamen\ArrCore\Actions\WantedActions;
-use MartinCamen\ArrCore\Domain\Download\DownloadItemCollection;
-use MartinCamen\ArrCore\Domain\Media\Series;
-use MartinCamen\ArrCore\Domain\System\SystemSummary;
 use MartinCamen\Sonarr\Actions\CalendarActions;
 use MartinCamen\Sonarr\Actions\CommandActions;
+use MartinCamen\Sonarr\Actions\DownloadActions;
 use MartinCamen\Sonarr\Actions\EpisodeActions;
 use MartinCamen\Sonarr\Actions\EpisodeFileActions;
 use MartinCamen\Sonarr\Actions\HistoryActions;
+use MartinCamen\Sonarr\Actions\SeriesActions;
 use MartinCamen\Sonarr\Client\SonarrApiClient;
 use MartinCamen\Sonarr\Client\SonarrApiClientInterface;
 use MartinCamen\Sonarr\Config\SonarrConfiguration;
-use MartinCamen\Sonarr\Mapper\SonarrToCoreMapper;
 
 /**
  * Sonarr SDK client - the primary interface for interacting with Sonarr.
@@ -33,11 +31,13 @@ use MartinCamen\Sonarr\Mapper\SonarrToCoreMapper;
  *     apiKey: 'your-api-key',
  * );
  *
- * // Get all downloads (queue items)
- * $downloads = $sonarr->downloads();
- *
  * // Get all series
- * $series = $sonarr->series();
+ * $series = $sonarr->series()->all();
+ * $singleSeries = $sonarr->series()->find(123);
+ *
+ * // Get all downloads
+ * $downloads = $sonarr->downloads()->all();
+ * $status = $sonarr->downloads()->status();
  *
  * // Get system status
  * $status = $sonarr->system()->status();
@@ -81,38 +81,23 @@ class Sonarr implements SonarrInterface
     }
 
     /**
-     * Get all active downloads (queue items).
+     * Access series functionality.
      *
-     * Returns a collection of download items mapped to Core domain models,
-     * providing a unified interface across all *arr services.
+     * Provides access to series information, search, and management.
      */
-    public function downloads(): DownloadItemCollection
+    public function series(): SeriesActions
     {
-        $queue = $this->apiClient->queue()->all();
-
-        return SonarrToCoreMapper::mapQueuePage($queue);
+        return $this->apiClient->series();
     }
 
     /**
-     * Get all series.
+     * Access download functionality.
      *
-     * @return array<int, Series>
+     * Provides access to download queue, status, and management.
      */
-    public function series(): array
+    public function downloads(): DownloadActions
     {
-        $series = $this->apiClient->series()->all();
-
-        return SonarrToCoreMapper::mapSeriesCollection($series);
-    }
-
-    /**
-     * Get a single series by ID.
-     */
-    public function seriesById(int $id): Series
-    {
-        $series = $this->apiClient->series()->find($id);
-
-        return SonarrToCoreMapper::mapSeries($series);
+        return $this->apiClient->downloads();
     }
 
     /**
@@ -123,17 +108,6 @@ class Sonarr implements SonarrInterface
     public function system(): SystemActions
     {
         return $this->apiClient->system();
-    }
-
-    /**
-     * Get system status including health checks.
-     */
-    public function systemSummary(): SystemSummary
-    {
-        $status = $this->apiClient->system()->status();
-        $health = $this->apiClient->system()->health();
-
-        return SonarrToCoreMapper::mapSystemSummary($status, $health->all());
     }
 
     /**
@@ -204,8 +178,8 @@ class Sonarr implements SonarrInterface
      *
      * @example
      * ```php
-     * // Access the raw queue API with full options
-     * $queuePage = $sonarr->api()->queue()->all($pagination, $sort, $filters);
+     * // Access the raw downloads API with full options
+     * $downloadPage = $sonarr->api()->downloads()->all($pagination, $sort, $filters);
      *
      * // Add a series using the raw API
      * $sonarr->api()->series()->add($seriesData);

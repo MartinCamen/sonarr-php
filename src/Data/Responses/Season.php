@@ -4,9 +4,7 @@ namespace MartinCamen\Sonarr\Data\Responses;
 
 final readonly class Season
 {
-    /**
-     * @param array<string, mixed> $statistics
-     */
+    /** @param array<string, mixed> $statistics */
     public function __construct(
         public int $seasonNumber,
         public bool $monitored,

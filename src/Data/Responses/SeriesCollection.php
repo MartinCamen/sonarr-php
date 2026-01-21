@@ -7,15 +7,13 @@ use Countable;
 use IteratorAggregate;
 use Traversable;
 
-/**
- * @implements IteratorAggregate<int, Series>
- */
+/** @implements IteratorAggregate<int, Series> */
 final class SeriesCollection implements Countable, IteratorAggregate
 {
-    /** @param  array<int, Series>  $series */
+    /** @param array<int, Series> $series */
     public function __construct(private array $series = []) {}
 
-    /** @param  array<int, array<string, mixed>>  $data */
+    /** @param array<int, array<string, mixed>> $data */
     public static function fromArray(array $data): self
     {
         return new self(
@@ -71,7 +69,7 @@ final class SeriesCollection implements Countable, IteratorAggregate
     public function toArray(): array
     {
         return array_map(
-            fn(Series $series): array => $series->toArray(),
+            static fn(Series $series): array => $series->toArray(),
             $this->series,
         );
     }
@@ -81,7 +79,7 @@ final class SeriesCollection implements Countable, IteratorAggregate
         return new self(
             array_values(array_filter(
                 $this->series,
-                fn(Series $series): bool => $series->isMonitored(),
+                static fn(Series $series): bool => $series->isMonitored(),
             )),
         );
     }
@@ -91,7 +89,7 @@ final class SeriesCollection implements Countable, IteratorAggregate
         return new self(
             array_values(array_filter(
                 $this->series,
-                fn(Series $series): bool => $series->isContinuing(),
+                static fn(Series $series): bool => $series->isContinuing(),
             )),
         );
     }
@@ -101,7 +99,7 @@ final class SeriesCollection implements Countable, IteratorAggregate
         return new self(
             array_values(array_filter(
                 $this->series,
-                fn(Series $series): bool => $series->isEnded(),
+                static fn(Series $series): bool => $series->isEnded(),
             )),
         );
     }
@@ -111,7 +109,7 @@ final class SeriesCollection implements Countable, IteratorAggregate
         return new self(
             array_values(array_filter(
                 $this->series,
-                fn(Series $series): bool => $series->hasEpisodes(),
+                static fn(Series $series): bool => $series->hasEpisodes(),
             )),
         );
     }
@@ -121,7 +119,7 @@ final class SeriesCollection implements Countable, IteratorAggregate
         return new self(
             array_values(array_filter(
                 $this->series,
-                fn(Series $series): bool => ! $series->hasAllEpisodes() && $series->isMonitored(),
+                static fn(Series $series): bool => ! $series->hasAllEpisodes() && $series->isMonitored(),
             )),
         );
     }

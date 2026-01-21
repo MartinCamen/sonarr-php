@@ -33,9 +33,7 @@ class EpisodeFactory
         ], $overrides);
     }
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
+    /** @return array<int, array<string, mixed>> */
     public static function makeMany(int $count = 5, int $seriesId = 1, int $seasonNumber = 1): array
     {
         $episodes = [];

@@ -2,7 +2,7 @@
 
 namespace MartinCamen\Sonarr\Testing\Factories;
 
-use MartinCamen\PhpFileSize\FileSize;
+use MartinCamen\ArrCore\ValueObject\ArrFileSize;
 
 class EpisodeFileFactory
 {
@@ -18,7 +18,7 @@ class EpisodeFileFactory
             'seasonNumber' => $seasonNumber,
             'relativePath' => "Season {$seasonNumber}/Test.Series.S" . str_pad((string) $seasonNumber, 2, '0', STR_PAD_LEFT) . 'E' . str_pad((string) $id, 2, '0', STR_PAD_LEFT) . '.1080p.BluRay.mkv',
             'path'         => "/tv/Test Series/Season {$seasonNumber}/Test.Series.S" . str_pad((string) $seasonNumber, 2, '0', STR_PAD_LEFT) . 'E' . str_pad((string) $id, 2, '0', STR_PAD_LEFT) . '.1080p.BluRay.mkv',
-            'size'         => (new FileSize())->gigabytes(1.5)->toBytes(),
+            'size'         => ArrFileSize::fromGigabytes(1.5)->toBytes(),
             'dateAdded'    => '2024-01-01T00:00:00Z',
             'sceneName'    => 'Test.Series.S' . str_pad((string) $seasonNumber, 2, '0', STR_PAD_LEFT) . 'E' . str_pad((string) $id, 2, '0', STR_PAD_LEFT) . '.1080p.BluRay.x264-GROUP',
             'releaseGroup' => 'GROUP',
@@ -38,9 +38,7 @@ class EpisodeFileFactory
         ], $overrides);
     }
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
+    /** @return array<int, array<string, mixed>> */
     public static function makeMany(int $count = 5, int $seriesId = 1, int $seasonNumber = 1): array
     {
         $files = [];
@@ -66,7 +64,7 @@ class EpisodeFileFactory
                 ],
             ],
             'qualityWeight' => 4,
-            'size'          => (new FileSize())->gigabyte()->toBytes(),
+            'size'          => ArrFileSize::zero()->gigabyte()->toBytes(),
         ], $overrides));
     }
 
@@ -84,7 +82,7 @@ class EpisodeFileFactory
                 ],
             ],
             'qualityWeight' => 5,
-            'size'          => (new FileSize())->gigabytes(1.2)->toBytes(),
+            'size'          => ArrFileSize::fromGigabytes(1.2)->toBytes(),
         ], $overrides));
     }
 }

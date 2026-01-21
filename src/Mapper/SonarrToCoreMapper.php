@@ -13,11 +13,11 @@ use MartinCamen\ArrCore\Domain\System\SystemSummary;
 use MartinCamen\ArrCore\Enum\Service;
 use MartinCamen\ArrCore\Mapping\ServiceToCoreMapper;
 use MartinCamen\ArrCore\Mapping\StatusNormalizer;
+use MartinCamen\ArrCore\ValueObject\ArrFileSize;
 use MartinCamen\ArrCore\ValueObject\ArrId;
-use MartinCamen\ArrCore\ValueObject\FileSize;
 use MartinCamen\ArrCore\ValueObject\Progress;
-use MartinCamen\Sonarr\Data\Responses\QueuePage;
-use MartinCamen\Sonarr\Data\Responses\QueueRecord;
+use MartinCamen\Sonarr\Data\Responses\Download;
+use MartinCamen\Sonarr\Data\Responses\DownloadPage;
 use MartinCamen\Sonarr\Data\Responses\Series as SonarrSeries;
 use MartinCamen\Sonarr\Data\Responses\SeriesCollection;
 
@@ -29,9 +29,7 @@ use MartinCamen\Sonarr\Data\Responses\SeriesCollection;
  */
 final class SonarrToCoreMapper extends ServiceToCoreMapper
 {
-    /**
-     * Map Sonarr Series DTO to Core Series model.
-     */
+    /** Map Sonarr Series DTO to Core Series model */
     public static function mapSeries(SonarrSeries $dto): Series
     {
         $hasFiles = $dto->episodeFileCount > 0;
@@ -43,7 +41,7 @@ final class SonarrToCoreMapper extends ServiceToCoreMapper
             status: StatusNormalizer::mediaFromSonarr($dto->status->value, $hasFiles),
             monitored: $dto->monitored,
             source: Service::Sonarr,
-            sizeOnDisk: FileSize::fromBytes($dto->sizeOnDisk),
+            sizeOnDisk: ArrFileSize::fromBytes($dto->sizeOnDisk),
             path: $dto->path,
             overview: $dto->overview,
             posterUrl: self::extractImage($dto->images, 'poster'),
@@ -74,27 +72,25 @@ final class SonarrToCoreMapper extends ServiceToCoreMapper
         );
     }
 
-    /**
-     * Map Sonarr Queue Record to Core DownloadItem.
-     */
-    public static function mapQueueRecord(QueueRecord $dto): DownloadItem
+    /** Map Sonarr Download to Core DownloadItem */
+    public static function mapDownload(Download $dto): DownloadItem
     {
         $size = $dto->size;
-        $sizeLeft = $dto->sizeleft;
-        $progress = $size > 0 ? (($size - $sizeLeft) / $size) * 100 : 0;
+        $sizeLeft = $dto->sizeLeft;
+        $progress = $size > 0 ? $dto->getProgress() : 0;
 
         return new DownloadItem(
             id: ArrId::fromInt($dto->id),
             name: $dto->title ?? 'Unknown',
-            size: FileSize::fromBytes((int) $size),
-            sizeRemaining: FileSize::fromBytes((int) $sizeLeft),
+            size: ArrFileSize::fromBytes((int) $size),
+            sizeRemaining: ArrFileSize::fromBytes((int) $sizeLeft),
             progress: Progress::fromPercentage($progress),
             status: StatusNormalizer::downloadFromSonarrQueue(
                 $dto->status,
                 $dto->trackedDownloadStatus,
             ),
             source: Service::Radarr,
-            eta: $dto->timeleft !== null ? self::parseTimeSpan($dto->timeleft) : null,
+            eta: $dto->timeLeft !== null ? self::parseTimeSpan($dto->timeLeft) : null,
             downloadClient: $dto->downloadClient,
             indexer: $dto->indexer,
             outputPath: $dto->outputPath,
@@ -104,14 +100,12 @@ final class SonarrToCoreMapper extends ServiceToCoreMapper
         );
     }
 
-    /**
-     * Map Sonarr Queue Page to Core DownloadItemCollection.
-     */
-    public static function mapQueuePage(QueuePage $dto): DownloadItemCollection
+    /** Map Sonarr DownloadPage to Core DownloadItemCollection */
+    public static function mapDownloadPage(DownloadPage $dto): DownloadItemCollection
     {
         $items = array_map(
-            self::mapQueueRecord(...),
-            $dto->records(),
+            self::mapDownload(...),
+            $dto->all(),
         );
 
         return new DownloadItemCollection(...$items);

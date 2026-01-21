@@ -2,6 +2,8 @@
 
 namespace MartinCamen\Sonarr\Data\Responses;
 
+use MartinCamen\ArrCore\ValueObject\ArrFileSize;
+
 final readonly class EpisodeFile
 {
     /**
@@ -63,12 +65,12 @@ final readonly class EpisodeFile
 
     public function getSizeGb(): float
     {
-        return round($this->size / 1024 / 1024 / 1024, 2);
+        return ArrFileSize::fromBytes($this->size)->toGigabytes(precision: 2);
     }
 
     public function getSizeMb(): float
     {
-        return round($this->size / 1024 / 1024, 2);
+        return ArrFileSize::fromBytes($this->size)->toMegabytes(precision: 2);
     }
 
     public function getQualityName(): string
