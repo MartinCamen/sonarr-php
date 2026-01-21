@@ -2,8 +2,18 @@
 
 namespace MartinCamen\Sonarr\Data\Responses;
 
-final readonly class QueueRecord
+use MartinCamen\ArrCore\Concerns\DownloadHasSizeWithSizeLeft;
+use MartinCamen\ArrCore\Concerns\DownloadHasTrackedDownloadState;
+use MartinCamen\ArrCore\Concerns\DownloadHasTrackedDownloadStatus;
+use MartinCamen\ArrCore\Enum\TrackedDownloadState;
+use MartinCamen\ArrCore\Enum\TrackedDownloadStatus;
+
+final readonly class Download
 {
+    use DownloadHasSizeWithSizeLeft;
+    use DownloadHasTrackedDownloadState;
+    use DownloadHasTrackedDownloadStatus;
+
     /**
      * @param array<string, mixed>|null $quality
      * @param array<int, array<string, mixed>> $statusMessages
@@ -20,8 +30,8 @@ final readonly class QueueRecord
         public string $trackedDownloadState,
         public ?array $quality,
         public float $size,
-        public float $sizeleft,
-        public ?string $timeleft,
+        public float $sizeLeft,
+        public ?string $timeLeft,
         public ?string $estimatedCompletionTime,
         public string $downloadClient,
         public string $downloadId,
@@ -43,12 +53,12 @@ final readonly class QueueRecord
             episodeId: $data['episodeId'] ?? null,
             title: $data['title'] ?? null,
             status: $data['status'] ?? 'unknown',
-            trackedDownloadStatus: $data['trackedDownloadStatus'] ?? 'unknown',
-            trackedDownloadState: $data['trackedDownloadState'] ?? 'unknown',
+            trackedDownloadStatus: $data['trackedDownloadStatus'] ?? TrackedDownloadStatus::Unknown->value,
+            trackedDownloadState: $data['trackedDownloadState'] ?? TrackedDownloadState::Unknown->value,
             quality: $data['quality'] ?? null,
             size: (float) ($data['size'] ?? 0),
-            sizeleft: (float) ($data['sizeleft'] ?? 0),
-            timeleft: $data['timeleft'] ?? null,
+            sizeLeft: (float) ($data['sizeleft'] ?? 0),
+            timeLeft: $data['timeleft'] ?? null,
             estimatedCompletionTime: $data['estimatedCompletionTime'] ?? null,
             downloadClient: $data['downloadClient'] ?? '',
             downloadId: $data['downloadId'] ?? '',
@@ -75,8 +85,8 @@ final readonly class QueueRecord
             'tracked_download_state'    => $this->trackedDownloadState,
             'quality'                   => $this->quality,
             'size'                      => $this->size,
-            'sizeleft'                  => $this->sizeleft,
-            'timeleft'                  => $this->timeleft,
+            'sizeleft'                  => $this->sizeLeft,
+            'timeleft'                  => $this->timeLeft,
             'estimated_completion_time' => $this->estimatedCompletionTime,
             'download_client'           => $this->downloadClient,
             'download_id'               => $this->downloadId,
@@ -88,36 +98,5 @@ final readonly class QueueRecord
             'series'                    => $this->series,
             'episode'                   => $this->episode,
         ];
-    }
-
-    public function getProgress(): float
-    {
-        if ($this->size === 0.0) {
-            return 0.0;
-        }
-
-        return round((($this->size - $this->sizeleft) / $this->size) * 100, 2);
-    }
-
-    public function getSizeGb(): float
-    {
-        return round($this->size / 1024 / 1024 / 1024, 2);
-    }
-
-    public function getSizeleftGb(): float
-    {
-        return round($this->sizeleft / 1024 / 1024 / 1024, 2);
-    }
-
-    public function isCompleted(): bool
-    {
-        return $this->trackedDownloadState === 'importPending'
-            || $this->trackedDownloadState === 'imported';
-    }
-
-    public function hasError(): bool
-    {
-        return $this->trackedDownloadStatus === 'warning'
-            || $this->trackedDownloadStatus === 'error';
     }
 }

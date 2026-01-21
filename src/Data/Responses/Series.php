@@ -2,6 +2,7 @@
 
 namespace MartinCamen\Sonarr\Data\Responses;
 
+use MartinCamen\ArrCore\ValueObject\ArrFileSize;
 use MartinCamen\Sonarr\Data\Enums\SeriesStatus;
 use MartinCamen\Sonarr\Data\Enums\SeriesType;
 
@@ -167,7 +168,7 @@ final readonly class Series
 
     public function getSizeOnDiskGb(): float
     {
-        return round($this->sizeOnDisk / 1024 / 1024 / 1024, 2);
+        return ArrFileSize::fromBytes($this->sizeOnDisk)->toGigabytes(precision: 2);
     }
 
     public function isAnime(): bool

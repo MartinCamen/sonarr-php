@@ -9,10 +9,10 @@ use MartinCamen\ArrCore\Actions\WantedActions;
 use MartinCamen\ArrCore\Client\RestClientInterface;
 use MartinCamen\Sonarr\Actions\CalendarActions;
 use MartinCamen\Sonarr\Actions\CommandActions;
+use MartinCamen\Sonarr\Actions\DownloadActions;
 use MartinCamen\Sonarr\Actions\EpisodeActions;
 use MartinCamen\Sonarr\Actions\EpisodeFileActions;
 use MartinCamen\Sonarr\Actions\HistoryActions;
-use MartinCamen\Sonarr\Actions\QueueActions;
 use MartinCamen\Sonarr\Actions\SeriesActions;
 use MartinCamen\Sonarr\Config\SonarrConfiguration;
 
@@ -35,7 +35,7 @@ class SonarrApiClient implements SonarrApiClientInterface
     protected ?SeriesActions $seriesActions = null;
     protected ?EpisodeActions $episodeActions = null;
     protected ?EpisodeFileActions $episodeFileActions = null;
-    protected ?QueueActions $queueActions = null;
+    protected ?DownloadActions $downloadActions = null;
     protected ?HistoryActions $historyActions = null;
     protected ?CalendarActions $calendarActions = null;
     protected ?SystemActions $systemActions = null;
@@ -93,9 +93,9 @@ class SonarrApiClient implements SonarrApiClientInterface
         return $this->episodeFileActions ??= new EpisodeFileActions($this->client);
     }
 
-    public function queue(): QueueActions
+    public function downloads(): DownloadActions
     {
-        return $this->queueActions ??= new QueueActions($this->client);
+        return $this->downloadActions ??= new DownloadActions($this->client);
     }
 
     public function history(): HistoryActions

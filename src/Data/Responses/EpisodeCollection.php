@@ -7,9 +7,7 @@ use Countable;
 use IteratorAggregate;
 use Traversable;
 
-/**
- * @implements IteratorAggregate<int, Episode>
- */
+/** @implements IteratorAggregate<int, Episode> */
 final class EpisodeCollection implements Countable, IteratorAggregate
 {
     /** @param array<int, Episode> $episodes */

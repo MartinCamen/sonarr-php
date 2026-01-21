@@ -9,10 +9,10 @@ use MartinCamen\ArrCore\Actions\WantedActions;
 use MartinCamen\ArrCore\Testing\BaseApiFake;
 use MartinCamen\Sonarr\Actions\CalendarActions;
 use MartinCamen\Sonarr\Actions\CommandActions;
+use MartinCamen\Sonarr\Actions\DownloadActions;
 use MartinCamen\Sonarr\Actions\EpisodeActions;
 use MartinCamen\Sonarr\Actions\EpisodeFileActions;
 use MartinCamen\Sonarr\Actions\HistoryActions;
-use MartinCamen\Sonarr\Actions\QueueActions;
 use MartinCamen\Sonarr\Actions\SeriesActions;
 use MartinCamen\Sonarr\Client\SonarrApiClientInterface;
 
@@ -41,9 +41,9 @@ class SonarrApiFake extends BaseApiFake implements SonarrApiClientInterface
         return new EpisodeFileActions($this->getFakeClient());
     }
 
-    public function queue(): QueueActions
+    public function downloads(): DownloadActions
     {
-        return new QueueActions($this->getFakeClient());
+        return new DownloadActions($this->getFakeClient());
     }
 
     public function history(): HistoryActions

@@ -8,10 +8,10 @@ use MartinCamen\ArrCore\Actions\SystemActions;
 use MartinCamen\ArrCore\Actions\WantedActions;
 use MartinCamen\Sonarr\Actions\CalendarActions;
 use MartinCamen\Sonarr\Actions\CommandActions;
+use MartinCamen\Sonarr\Actions\DownloadActions;
 use MartinCamen\Sonarr\Actions\EpisodeActions;
 use MartinCamen\Sonarr\Actions\EpisodeFileActions;
 use MartinCamen\Sonarr\Actions\HistoryActions;
-use MartinCamen\Sonarr\Actions\QueueActions;
 use MartinCamen\Sonarr\Actions\SeriesActions;
 
 /**
@@ -27,7 +27,7 @@ interface SonarrApiClientInterface
 
     public function episodeFile(): EpisodeFileActions;
 
-    public function queue(): QueueActions;
+    public function downloads(): DownloadActions;
 
     public function history(): HistoryActions;
 

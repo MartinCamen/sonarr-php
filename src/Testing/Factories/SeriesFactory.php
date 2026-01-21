@@ -2,7 +2,7 @@
 
 namespace MartinCamen\Sonarr\Testing\Factories;
 
-use MartinCamen\PhpFileSize\FileSize;
+use MartinCamen\ArrCore\ValueObject\ArrFileSize;
 
 class SeriesFactory
 {
@@ -12,7 +12,7 @@ class SeriesFactory
      */
     public static function make(int $id = 1, array $overrides = []): array
     {
-        $fileSize = (new FileSize())->gigabytes(5)->toBytes();
+        $fileSize = ArrFileSize::fromGigabytes(5)->toBytes();
 
         return array_merge([
             'id'                => $id,
@@ -68,9 +68,7 @@ class SeriesFactory
         ], $overrides);
     }
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
+    /** @return array<int, array<string, mixed>> */
     public static function makeMany(int $count = 5): array
     {
         $series = [];
@@ -93,7 +91,7 @@ class SeriesFactory
                 'episodeCount'      => 10,
                 'episodeFileCount'  => 10,
                 'totalEpisodeCount' => 10,
-                'sizeOnDisk'        => (new FileSize())->gigabytes(10)->toBytes(),
+                'sizeOnDisk'        => ArrFileSize::fromGigabytes(10)->toBytes(),
             ],
         ], $overrides));
     }

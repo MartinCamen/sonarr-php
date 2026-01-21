@@ -5,7 +5,7 @@ namespace MartinCamen\Sonarr\Data\Options;
 use MartinCamen\ArrCore\Data\Options\BuildsRequestParams;
 use MartinCamen\ArrCore\Data\Options\RequestOptions;
 
-final readonly class QueueOptions implements RequestOptions
+final readonly class DownloadOptions implements RequestOptions
 {
     use BuildsRequestParams;
 
